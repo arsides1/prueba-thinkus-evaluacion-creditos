@@ -1,0 +1,127 @@
+# =============================================================================
+# docker-compose.yml | Levanta TODO el ecosistema con un solo comando
+# =============================================================================
+# Servicios:
+#   - postgres        (puerto 5432) base de datos compartida
+#   - ms-riesgos      (puerto 8081) mock del buro de riesgo crediticio
+#   - ms-orquestador  (puerto 8080) BFF que orquesta el flujo
+#   - frontend        (puerto 4200) SPA Angular servida por Nginx
+#
+# Uso:
+#   docker compose up --build      # primer arranque (compila imagenes)
+#   docker compose up              # arranque normal (usa cache)
+#   docker compose down            # detener y eliminar contenedores
+#   docker compose down -v         # detener y borrar volumenes (BD limpia)
+#   docker compose logs -f ms-orquestador
+#
+# El frontend queda disponible en http://localhost:4200
+# Swagger del orquestador en  http://localhost:8080/q/swagger-ui
+# Swagger del MS B en         http://localhost:8081/q/swagger-ui
+# =============================================================================
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: thinkus-postgres
+    environment:
+      POSTGRES_DB: prueba_thinkus
+      POSTGRES_USER: thinkus_app
+      POSTGRES_PASSWORD: thinkus_app_pwd
+      # UTF-8 explicito para evitar sorpresas con caracteres en castellano
+      LANG: 'es_ES.utf8'
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8'
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thinkus_app -d prueba_thinkus"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - thinkus-net
+
+  ms-riesgos:
+    build:
+      # Contexto en backend/ porque el Dockerfile copia el modulo commons
+      context: ./backend
+      dockerfile: ms-riesgos/src/main/docker/Dockerfile.jvm
+    container_name: thinkus-ms-riesgos
+    image: thinkus/ms-riesgos:1.0.0
+    ports:
+      - "8081:8081"
+    environment:
+      QUARKUS_HTTP_PORT: 8081
+      QUARKUS_HTTP_HOST: 0.0.0.0
+      QUARKUS_HTTP_CORS_ORIGINS: 'http://localhost:4200,http://localhost:8080'
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8081/q/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    networks:
+      - thinkus-net
+
+  ms-orquestador:
+    build:
+      context: ./backend
+      dockerfile: ms-orquestador/src/main/docker/Dockerfile.jvm
+    container_name: thinkus-ms-orquestador
+    image: thinkus/ms-orquestador:1.0.0
+    ports:
+      - "8080:8080"
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      QUARKUS_HTTP_HOST: 0.0.0.0
+      # Datasource reactivo para la app (Hibernate Reactive Panache)
+      QUARKUS_DATASOURCE_REACTIVE_URL: 'postgresql://postgres:5432/prueba_thinkus'
+      # Datasource JDBC para Flyway (no soporta reactivo)
+      QUARKUS_DATASOURCE_JDBC_URL: 'jdbc:postgresql://postgres:5432/prueba_thinkus'
+      QUARKUS_DATASOURCE_USERNAME: thinkus_app
+      QUARKUS_DATASOURCE_PASSWORD: thinkus_app_pwd
+      # Cliente REST al MS B usando el nombre del servicio en la red docker
+      QUARKUS_REST_CLIENT_RIESGOS_API_URL: 'http://ms-riesgos:8081'
+      QUARKUS_HTTP_CORS_ORIGINS: 'http://localhost:4200'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ms-riesgos:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8080/q/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    networks:
+      - thinkus-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: thinkus-frontend
+    image: thinkus/frontend:1.0.0
+    ports:
+      - "4200:80"
+    depends_on:
+      - ms-orquestador
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - thinkus-net
+
+networks:
+  thinkus-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

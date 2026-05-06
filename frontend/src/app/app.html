@@ -1,0 +1,48 @@
+<nav class="tk-navbar">
+  <div class="container d-flex align-items-center">
+    <a class="navbar-brand me-auto" routerLink="/">
+      <span class="tk-logo">CR</span>
+      <span>
+        Crédito Rápido
+        <small>Plataforma de evaluación crediticia</small>
+      </span>
+    </a>
+    <ul class="navbar-nav d-flex flex-row gap-2 mb-0 list-unstyled">
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Nueva solicitud
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/historial" routerLinkActive="active">
+          Historial
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="tk-footer">
+  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <div>
+      <span class="tk-footer-brand">Crédito Rápido</span> · Sistema interno de
+      evaluación crediticia
+      <div class="tk-footer-disclaimer">
+        Las evaluaciones presentadas son producto de procesos automatizados y
+        están sujetas a verificación adicional por parte del área de riesgos.
+      </div>
+    </div>
+    <div class="text-md-end small" style="opacity: 0.6">
+      Build {{ buildVersion }} · Latencia simulada de buró ~ 2s
+    </div>
+  </div>
+</footer>

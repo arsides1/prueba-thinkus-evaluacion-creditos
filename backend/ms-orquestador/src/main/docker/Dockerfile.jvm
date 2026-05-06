@@ -1,0 +1,43 @@
+# =============================================================================
+# Dockerfile multi-stage para ms-orquestador (modo JVM)
+# =============================================================================
+# Stage 1 (builder): compila con Maven 3.9 + JDK 21 incluyendo el modulo commons.
+# Stage 2 (runtime): UBI 9 OpenJDK 21 minimo, solo el jar empaquetado por Quarkus.
+#
+# IMPORTANTE: el contexto de docker build debe ser la carpeta backend/ (el
+# parent multi-modulo). El docker-compose ya esta configurado asi.
+# =============================================================================
+
+# ---------- Stage 1: build ----------
+FROM maven:3.9-eclipse-temurin-21 AS builder
+
+WORKDIR /workspace
+
+# Copiamos el parent POM y TODOS los modulos. El parent declara los tres
+# como hijos y Maven valida que existan al inicio aunque solo compile uno.
+COPY pom.xml ./
+COPY commons ./commons
+COPY ms-orquestador ./ms-orquestador
+COPY ms-riesgos ./ms-riesgos
+
+RUN mvn -B -pl ms-orquestador -am clean package -DskipTests
+
+
+# ---------- Stage 2: runtime ----------
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.20
+
+ENV LANGUAGE='en_US:en'
+
+# La imagen UBI9 OpenJDK 21:1.20 ya trae curl-minimal preinstalado.
+
+COPY --from=builder --chown=185 /workspace/ms-orquestador/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=builder --chown=185 /workspace/ms-orquestador/target/quarkus-app/*.jar /deployments/
+COPY --from=builder --chown=185 /workspace/ms-orquestador/target/quarkus-app/app/ /deployments/app/
+COPY --from=builder --chown=185 /workspace/ms-orquestador/target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8080
+
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]

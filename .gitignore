@@ -1,0 +1,96 @@
+# ============================================================
+# .gitignore — Prueba Think Us
+# ============================================================
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Quarkus
+.quarkus/
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# Java
+*.class
+hs_err_pid*
+replay_pid*
+
+# Logs
+*.log
+logs/
+
+# Eclipse
+.project
+.classpath
+.settings/
+.metadata/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Node / Angular (frontend/)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+frontend/*.tsbuildinfo
+frontend/.env
+frontend/.env.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+.docker-data/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl
+crash.log
+*.tfvars.local
+
+# Secrets / Env (el .env REAL no se sube; .env.example si para que el reviewer lo copie)
+.env
+.env.local
+!.env.example
+*.pem
+*.key
+
+# Helm
+chart/charts/
+chart/Chart.lock
+
+# Notas internas (uso personal del desarrollador, no se publican)
+NOTAS_*.md
+notas_internas/

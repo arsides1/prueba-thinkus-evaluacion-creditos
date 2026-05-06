@@ -1,0 +1,11 @@
+apiVersion: v2
+name: thinkus-microservicio
+description: Helm chart generico para los microservicios Quarkus del ecosistema de creditos
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+# Mismo chart sirve para ms-orquestador y ms-riesgos cambiando values.
+maintainers:
+  - name: Equipo de Creditos
+    email: creditos@thinkus.example

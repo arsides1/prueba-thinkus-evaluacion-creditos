@@ -1,0 +1,54 @@
+@let resultado = data();
+
+<div
+  class="tk-result mt-4"
+  [class.tk-result-aprobado]="esAprobado()"
+  [class.tk-result-rechazado]="!esAprobado()"
+>
+  <div class="tk-result-banner">
+    <span class="tk-result-icon">{{ esAprobado() ? '✓' : '✗' }}</span>
+    <div>
+      @if (esAprobado()) {
+        <div>Solicitud aprobada</div>
+      } @else {
+        <div>Solicitud rechazada</div>
+      }
+      <small style="opacity: 0.8; font-weight: 400; font-size: 0.82rem">
+        Resultado emitido por la política crediticia interna
+      </small>
+    </div>
+  </div>
+
+  <div class="tk-result-amount">
+    <div class="tk-result-amount-label">Monto evaluado</div>
+    <div class="tk-result-amount-value">
+      {{ resultado.monto | currency: 'USD':'symbol':'1.2-2' }}
+    </div>
+  </div>
+
+  <dl class="tk-result-detail">
+    <dt>Cédula</dt>
+    <dd>{{ resultado.cedula }}</dd>
+
+    <dt>Score crediticio</dt>
+    <dd>
+      <div class="tk-score">
+        <div class="tk-score-bar">
+          <div
+            class="tk-score-bar-fill"
+            [class.high]="resultado.score > 70"
+            [class.low]="resultado.score <= 70"
+            [style.width.%]="resultado.score"
+          ></div>
+        </div>
+        <span class="tk-score-value">{{ resultado.score }}/100</span>
+      </div>
+    </dd>
+
+    <dt>Motivo</dt>
+    <dd>{{ resultado.motivo }}</dd>
+
+    <dt>Fecha de emisión</dt>
+    <dd>{{ resultado.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+  </dl>
+</div>

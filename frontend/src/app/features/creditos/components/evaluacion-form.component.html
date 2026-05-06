@@ -1,0 +1,105 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <div class="row g-4">
+    <div class="col-md-6">
+      <label for="cedula" class="tk-form-label">Cédula del solicitante</label>
+      <input
+        id="cedula"
+        type="text"
+        class="tk-form-control"
+        formControlName="cedula"
+        maxlength="10"
+        autocomplete="off"
+        inputmode="numeric"
+        [class.is-invalid]="cedulaCtrl.touched && cedulaCtrl.invalid"
+        placeholder="Ej. 1716123458"
+      />
+      @if (cedulaCtrl.touched && cedulaCtrl.errors; as errors) {
+        <p class="tk-form-error">
+          @if (errors['required']) {
+            La cédula es requerida.
+          } @else if (errors['cedula']) {
+            {{ errors['cedula'] }}
+          }
+        </p>
+      } @else {
+        <p class="tk-form-help">10 dígitos. Validación con algoritmo de Módulo 10.</p>
+      }
+    </div>
+
+    <div class="col-md-6">
+      <label for="monto" class="tk-form-label">Monto solicitado</label>
+      <div class="tk-input-prefix">
+        <span class="tk-prefix">USD</span>
+        <input
+          id="monto"
+          type="number"
+          min="1"
+          step="0.01"
+          class="tk-form-control"
+          formControlName="monto"
+          [class.is-invalid]="montoCtrl.touched && montoCtrl.invalid"
+        />
+      </div>
+      @if (montoCtrl.touched && montoCtrl.invalid) {
+        <p class="tk-form-error">El monto debe ser mayor a 0.</p>
+      } @else {
+        <p class="tk-form-help">Capital del crédito a evaluar.</p>
+      }
+    </div>
+
+    <div class="col-md-6">
+      <label for="anios" class="tk-form-label">Plazo</label>
+      <div class="tk-input-prefix">
+        <input
+          id="anios"
+          type="number"
+          min="1"
+          max="30"
+          step="1"
+          class="tk-form-control"
+          formControlName="anios"
+          [class.is-invalid]="aniosCtrl.touched && aniosCtrl.invalid"
+        />
+        <span class="tk-prefix" style="left: auto; right: 0.95rem">años</span>
+      </div>
+      @if (aniosCtrl.touched && aniosCtrl.invalid) {
+        <p class="tk-form-error">El plazo debe estar entre 1 y 30 años.</p>
+      } @else {
+        <p class="tk-form-help">Número entero de años.</p>
+      }
+    </div>
+
+    <div class="col-md-6">
+      <label for="salario" class="tk-form-label">Salario mensual</label>
+      <div class="tk-input-prefix">
+        <span class="tk-prefix">USD</span>
+        <input
+          id="salario"
+          type="number"
+          min="1"
+          step="0.01"
+          class="tk-form-control"
+          formControlName="salario"
+          [class.is-invalid]="salarioCtrl.touched && salarioCtrl.invalid"
+        />
+      </div>
+      @if (salarioCtrl.touched && salarioCtrl.invalid) {
+        <p class="tk-form-error">El salario debe ser mayor a 0.</p>
+      } @else {
+        <p class="tk-form-help">Ingreso mensual declarado.</p>
+      }
+    </div>
+  </div>
+
+  <hr class="my-4" style="border-color: var(--tk-border)" />
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <small class="text-muted" style="max-width: 480px">
+      Al enviar la solicitud se consultará el buró de riesgo y se aplicará la
+      política crediticia interna. La evaluación puede tomar hasta 3 segundos.
+    </small>
+    <button type="submit" class="tk-btn tk-btn-primary" [disabled]="form.invalid">
+      Evaluar solicitud →
+    </button>
+  </div>
+</form>

@@ -1,0 +1,121 @@
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+    <div>
+      <span class="tk-page-eyebrow">Operación</span>
+      <h1 class="tk-page-title">Historial de evaluaciones</h1>
+      <p class="tk-page-subtitle">
+        Resumen agregado y detalle individual de las solicitudes procesadas.
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <button
+        type="button"
+        class="tk-btn tk-btn-outline"
+        (click)="recargar()"
+        [disabled]="loading()"
+      >
+        ↻ Refrescar
+      </button>
+      <a routerLink="/" class="tk-btn tk-btn-primary">+ Nueva solicitud</a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-spinner mensaje="Cargando historial…" />
+  } @else if (error(); as msg) {
+    <div class="tk-alert tk-alert-warning">
+      <div>
+        <div class="tk-alert-title">No se pudo cargar el historial</div>
+        <p class="mb-2">{{ msg }}</p>
+        <button class="tk-btn tk-btn-outline" (click)="recargar()">
+          Reintentar
+        </button>
+      </div>
+    </div>
+  } @else {
+    <!-- KPIs agregados -->
+    <div class="tk-kpi-grid">
+      <div class="tk-kpi">
+        <div class="tk-kpi-label">Total de solicitudes</div>
+        <div class="tk-kpi-value">{{ total() }}</div>
+      </div>
+      <div class="tk-kpi kpi-success">
+        <div class="tk-kpi-label">Aprobadas</div>
+        <div class="tk-kpi-value">
+          {{ aprobadas() }}
+          <span class="tk-kpi-suffix">de {{ total() }}</span>
+        </div>
+      </div>
+      <div class="tk-kpi kpi-danger">
+        <div class="tk-kpi-label">Rechazadas</div>
+        <div class="tk-kpi-value">
+          {{ rechazadas() }}
+          <span class="tk-kpi-suffix">de {{ total() }}</span>
+        </div>
+      </div>
+      <div class="tk-kpi kpi-gold">
+        <div class="tk-kpi-label">Tasa de aprobación</div>
+        <div class="tk-kpi-value">
+          {{ tasaAprobacion() | number: '1.0-1' }}<span class="tk-kpi-suffix">%</span>
+        </div>
+      </div>
+      <div class="tk-kpi">
+        <div class="tk-kpi-label">Monto evaluado total</div>
+        <div class="tk-kpi-value">
+          {{ montoTotal() | currency: 'USD':'symbol':'1.0-0' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="tk-table-card">
+      <div class="table-responsive">
+        <table class="tk-table">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th class="text-end">Monto</th>
+              <th>Score</th>
+              <th>Estado</th>
+              <th>Motivo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of evaluaciones(); track $index) {
+              <tr>
+                <td class="tk-tabular">{{ e.cedula }}</td>
+                <td class="text-end tk-tabular">
+                  {{ e.monto | currency: 'USD':'symbol':'1.2-2' }}
+                </td>
+                <td>
+                  <span class="tk-badge tk-badge-neutral">{{ e.score }}</span>
+                </td>
+                <td>
+                  @if (e.estado === 'APROBADO') {
+                    <span class="tk-badge tk-badge-success">✓ Aprobado</span>
+                  } @else {
+                    <span class="tk-badge tk-badge-danger">✗ Rechazado</span>
+                  }
+                </td>
+                <td class="text-muted small">{{ e.motivo }}</td>
+                <td class="small text-muted tk-tabular">
+                  {{ e.fecha | date: 'dd/MM/yyyy HH:mm' }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">
+                  <div class="tk-empty">
+                    <div class="tk-empty-title">Aún no hay evaluaciones registradas</div>
+                    <div>Las solicitudes que procese aparecerán aquí.</div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

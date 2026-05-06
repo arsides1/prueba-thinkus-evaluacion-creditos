@@ -1,0 +1,610 @@
+/* ============================================================================
+ * Sistema de evaluacion crediticia
+ * Paleta y tipografia tipo banca / fintech profesional
+ * ============================================================================ */
+
+/* Bootstrap 5 ya esta cargado via angular.json (CSS + JS bundle).
+   Aqui se sobrescriben tokens y se agrega capa de estilo institucional. */
+
+:root {
+  /* Paleta primaria - corporativo bancario */
+  --tk-primary:        #0A2342;   /* Navy profundo */
+  --tk-primary-dark:   #061831;
+  --tk-primary-light:  #1B3B66;
+  --tk-secondary:      #1E5F8E;   /* Azul medio */
+  --tk-accent-gold:    #C9A14B;   /* Dorado discreto */
+
+  /* Estados */
+  --tk-success:        #0F8B5C;   /* Verde corporativo (no bootstrap) */
+  --tk-success-bg:     #E8F5EF;
+  --tk-success-border: #BFE3D2;
+  --tk-danger:         #B23A3A;   /* Rojo corporativo */
+  --tk-danger-bg:      #FBEBEB;
+  --tk-danger-border:  #E8C2C2;
+  --tk-warning:        #C77700;
+  --tk-info:           #2070A8;
+
+  /* Neutros */
+  --tk-bg:             #F4F6FA;   /* Fondo perlado */
+  --tk-surface:        #FFFFFF;
+  --tk-surface-alt:    #FBFCFE;
+  --tk-text:           #15233A;
+  --tk-text-muted:     #5A6B7E;
+  --tk-text-faint:     #94A2B3;
+  --tk-border:         #E2E7EF;
+  --tk-border-strong:  #C7D0DC;
+
+  /* Sombras */
+  --tk-shadow-sm: 0 1px 2px rgba(15, 30, 60, 0.04), 0 1px 3px rgba(15, 30, 60, 0.06);
+  --tk-shadow-md: 0 4px 12px rgba(15, 30, 60, 0.08), 0 2px 4px rgba(15, 30, 60, 0.04);
+  --tk-shadow-lg: 0 12px 32px rgba(15, 30, 60, 0.12), 0 4px 8px rgba(15, 30, 60, 0.06);
+
+  /* Radios */
+  --tk-radius-sm: 6px;
+  --tk-radius-md: 10px;
+  --tk-radius-lg: 14px;
+}
+
+/* === Reset basico === */
+html, body {
+  height: 100%;
+  background-color: var(--tk-bg);
+  color: var(--tk-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.01em;
+}
+
+main {
+  min-height: calc(100vh - 180px);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--tk-text);
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+a { color: var(--tk-secondary); }
+
+/* === Header / Navbar bancario === */
+.tk-navbar {
+  background: linear-gradient(135deg, var(--tk-primary) 0%, var(--tk-primary-light) 100%);
+  border-bottom: 3px solid var(--tk-accent-gold);
+  box-shadow: var(--tk-shadow-md);
+  padding: 0.85rem 0;
+}
+
+.tk-navbar .navbar-brand {
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tk-navbar .navbar-brand .tk-logo {
+  width: 38px; height: 38px;
+  background: var(--tk-accent-gold);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--tk-primary);
+  font-size: 1.1rem;
+}
+
+.tk-navbar .navbar-brand small {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: block;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.tk-navbar .nav-link {
+  color: rgba(255,255,255,0.78) !important;
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--tk-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.tk-navbar .nav-link:hover {
+  color: #FFFFFF !important;
+  background: rgba(255,255,255,0.08);
+}
+
+.tk-navbar .nav-link.active {
+  color: #FFFFFF !important;
+  background: rgba(201, 161, 75, 0.18);
+}
+
+/* === Cards === */
+.tk-card {
+  background: var(--tk-surface);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-lg);
+  box-shadow: var(--tk-shadow-sm);
+  overflow: hidden;
+}
+
+.tk-card-header {
+  padding: 1.4rem 1.75rem 1.1rem;
+  border-bottom: 1px solid var(--tk-border);
+  background: var(--tk-surface-alt);
+}
+
+.tk-card-body {
+  padding: 1.75rem;
+}
+
+/* === Page header === */
+.tk-page-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  color: var(--tk-primary);
+}
+
+.tk-page-subtitle {
+  color: var(--tk-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.tk-page-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tk-secondary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+/* === Form fields === */
+.tk-form-label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--tk-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.45rem;
+  display: block;
+}
+
+.tk-form-help {
+  font-size: 0.78rem;
+  color: var(--tk-text-faint);
+  margin-top: 0.3rem;
+  margin-bottom: 0;
+}
+
+.tk-form-control {
+  border: 1.5px solid var(--tk-border);
+  border-radius: var(--tk-radius-md);
+  padding: 0.7rem 0.95rem;
+  font-size: 0.98rem;
+  background: var(--tk-surface);
+  color: var(--tk-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.tk-form-control:focus {
+  outline: none;
+  border-color: var(--tk-secondary);
+  box-shadow: 0 0 0 3px rgba(30, 95, 142, 0.12);
+}
+
+.tk-form-control.is-invalid {
+  border-color: var(--tk-danger);
+}
+
+.tk-form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(178, 58, 58, 0.12);
+}
+
+.tk-input-prefix {
+  position: relative;
+}
+
+/* Padding por defecto ajustado para que "USD" (3 caracteres) no se monte
+   sobre el numero. Ancho efectivo ~3rem incluido el separador visual. */
+.tk-input-prefix .tk-form-control {
+  padding-left: 3.4rem;
+}
+
+.tk-input-prefix .tk-prefix {
+  position: absolute;
+  left: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tk-text-faint);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* Separador visual sutil entre el prefijo y el numero */
+.tk-input-prefix .tk-prefix:not([style*="right"])::after {
+  content: '';
+  position: absolute;
+  right: -0.55rem;
+  top: -6px;
+  bottom: -6px;
+  width: 1px;
+  background: var(--tk-border);
+}
+
+/* Variante con SUFIJO a la derecha (ej. "anos"). Se detecta el inline
+   style="right..." en el span del sufijo. */
+.tk-input-prefix:has(.tk-prefix[style*="right"]) .tk-form-control {
+  padding-left: 0.95rem;
+  padding-right: 3.4rem;
+}
+
+.tk-form-error {
+  color: var(--tk-danger);
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* === Botones === */
+.tk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border-radius: var(--tk-radius-md);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.tk-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tk-btn-primary {
+  background: var(--tk-primary);
+  color: #FFFFFF;
+}
+.tk-btn-primary:not(:disabled):hover {
+  background: var(--tk-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--tk-shadow-md);
+}
+
+.tk-btn-outline {
+  background: transparent;
+  color: var(--tk-primary);
+  border-color: var(--tk-border-strong);
+}
+.tk-btn-outline:hover {
+  background: var(--tk-surface-alt);
+  border-color: var(--tk-primary);
+}
+
+/* === Cards de resultado === */
+.tk-result {
+  border-radius: var(--tk-radius-lg);
+  overflow: hidden;
+  border: 1px solid;
+  background: var(--tk-surface);
+  box-shadow: var(--tk-shadow-md);
+}
+
+.tk-result-aprobado { border-color: var(--tk-success-border); }
+.tk-result-rechazado { border-color: var(--tk-danger-border); }
+
+.tk-result-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.25rem 1.75rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+}
+
+.tk-result-aprobado .tk-result-banner {
+  background: linear-gradient(135deg, var(--tk-success) 0%, #0B7048 100%);
+}
+.tk-result-rechazado .tk-result-banner {
+  background: linear-gradient(135deg, var(--tk-danger) 0%, #8E2828 100%);
+}
+
+.tk-result-icon {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.tk-result-amount {
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid var(--tk-border);
+  background: var(--tk-surface-alt);
+}
+.tk-result-amount-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.3rem;
+}
+.tk-result-amount-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--tk-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.tk-result-detail {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0.85rem 1.25rem;
+  padding: 1.5rem 1.75rem;
+}
+.tk-result-detail dt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--tk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tk-result-detail dd {
+  margin: 0;
+  color: var(--tk-text);
+  font-weight: 500;
+}
+
+/* Score visual con barra */
+.tk-score {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.tk-score-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--tk-border);
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 200px;
+}
+.tk-score-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.tk-score-bar-fill.high { background: var(--tk-success); }
+.tk-score-bar-fill.low  { background: var(--tk-danger); }
+.tk-score-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--tk-text);
+  min-width: 50px;
+}
+
+/* === KPIs del historial === */
+.tk-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+.tk-kpi {
+  background: var(--tk-surface);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--tk-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.tk-kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: var(--tk-secondary);
+}
+.tk-kpi.kpi-success::before { background: var(--tk-success); }
+.tk-kpi.kpi-danger::before  { background: var(--tk-danger); }
+.tk-kpi.kpi-gold::before    { background: var(--tk-accent-gold); }
+
+.tk-kpi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.4rem;
+}
+.tk-kpi-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--tk-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.tk-kpi-suffix {
+  font-size: 0.85rem;
+  color: var(--tk-text-muted);
+  margin-left: 0.3rem;
+  font-weight: 500;
+}
+
+/* === Tabla === */
+.tk-table-card {
+  background: var(--tk-surface);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--tk-shadow-sm);
+}
+.tk-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.tk-table thead th {
+  background: var(--tk-surface-alt);
+  color: var(--tk-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.95rem 1.25rem;
+  border-bottom: 1px solid var(--tk-border);
+  text-align: left;
+  white-space: nowrap;
+}
+.tk-table tbody td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--tk-border);
+  font-size: 0.92rem;
+  color: var(--tk-text);
+  vertical-align: middle;
+}
+.tk-table tbody tr:last-child td { border-bottom: none; }
+.tk-table tbody tr:hover { background: var(--tk-surface-alt); }
+.tk-table .tk-tabular { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+/* === Badges de estado === */
+.tk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tk-badge-success {
+  background: var(--tk-success-bg);
+  color: var(--tk-success);
+  border: 1px solid var(--tk-success-border);
+}
+.tk-badge-danger {
+  background: var(--tk-danger-bg);
+  color: var(--tk-danger);
+  border: 1px solid var(--tk-danger-border);
+}
+.tk-badge-neutral {
+  background: var(--tk-surface-alt);
+  color: var(--tk-text-muted);
+  border: 1px solid var(--tk-border);
+  font-variant-numeric: tabular-nums;
+}
+
+/* === Alert === */
+.tk-alert {
+  padding: 1rem 1.25rem;
+  border-radius: var(--tk-radius-md);
+  border: 1px solid;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.tk-alert-danger {
+  background: var(--tk-danger-bg);
+  border-color: var(--tk-danger-border);
+  color: var(--tk-danger);
+}
+.tk-alert-warning {
+  background: #FFF7E6;
+  border-color: #F0D9A8;
+  color: var(--tk-warning);
+}
+.tk-alert-title { font-weight: 700; margin-bottom: 0.2rem; }
+
+/* === Loading state === */
+.tk-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  background: var(--tk-surface);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-lg);
+  margin-top: 1.5rem;
+}
+.tk-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--tk-border);
+  border-top-color: var(--tk-secondary);
+  border-radius: 50%;
+  animation: tk-spin 0.85s linear infinite;
+}
+@keyframes tk-spin { to { transform: rotate(360deg); } }
+.tk-loading-text {
+  margin-top: 1rem;
+  color: var(--tk-text-muted);
+  font-size: 0.95rem;
+}
+
+/* === Footer === */
+.tk-footer {
+  background: var(--tk-primary-dark);
+  color: rgba(255,255,255,0.65);
+  padding: 1.5rem 0;
+  margin-top: 3rem;
+  font-size: 0.82rem;
+}
+.tk-footer-brand {
+  color: var(--tk-accent-gold);
+  font-weight: 700;
+}
+.tk-footer-disclaimer {
+  margin-top: 0.4rem;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.74rem;
+}
+
+/* === Empty state === */
+.tk-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--tk-text-muted);
+}
+.tk-empty-title { font-weight: 600; color: var(--tk-text); margin-bottom: 0.4rem; }

@@ -1,0 +1,79 @@
+## Valores por defecto del chart. Se sobrescriben por servicio:
+## helm install ms-orquestador chart/ -f values-orquestador.yaml
+
+# Identificacion
+nameOverride: ""
+fullnameOverride: ""
+
+# Imagen de la aplicacion
+image:
+  repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/thinkus/ms-orquestador
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+# Cantidad de replicas
+replicaCount: 2
+
+# Recursos asignados al pod (ajustar por servicio)
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Puerto donde escucha la app dentro del pod
+service:
+  type: ClusterIP
+  port: 8080
+
+# Probes de Quarkus (provistos por smallrye-health)
+probes:
+  liveness:
+    path: /q/health/live
+    initialDelaySeconds: 20
+    periodSeconds: 10
+  readiness:
+    path: /q/health/ready
+    initialDelaySeconds: 10
+    periodSeconds: 5
+
+# Variables de entorno (URLs, credenciales via Secrets, etc.)
+# Para credenciales reales, usar valueFrom: secretKeyRef en lugar de hardcodear.
+env:
+  QUARKUS_HTTP_HOST: 0.0.0.0
+  QUARKUS_HTTP_PORT: "8080"
+  # QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://thinkus-prd.xxxxx.rds.amazonaws.com:5432/prueba_thinkus
+  # QUARKUS_REST_CLIENT_RIESGOS_API_URL: http://ms-riesgos:8081
+
+# Service Account con annotation IRSA para que el pod asuma un rol AWS
+# (acceso a SQS, Secrets Manager, S3, etc. sin guardar access keys)
+serviceAccount:
+  create: true
+  name: ""
+  annotations:
+    # Reemplazar <ACCOUNT> y el nombre del rol creado por Terraform
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/thinkus-prd-ms-orquestador
+
+# Ingress (ALB) opcional
+ingress:
+  enabled: false
+  className: alb
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+  hosts:
+    - host: api.thinkus.example.com
+      paths:
+        - path: /v1/credit-evaluations
+          pathType: Prefix
+
+# Autoscaling horizontal (HPA)
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70

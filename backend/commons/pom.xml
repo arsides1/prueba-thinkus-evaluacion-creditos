@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ============================================================================
+    Módulo: commons
+    ============================================================================
+    Contratos compartidos entre ms-orquestador y ms-riesgos:
+      - DTOs (request/response)
+      - Excepciones de negocio
+      - Validador de Cédula Ecuatoriana (algoritmo Módulo 10)
+      - Anotación @CedulaEC para Bean Validation
+
+    NOTA: Este módulo NO depende de Quarkus runtime, solo del API de
+    Jakarta Bean Validation, para mantenerlo lo más liviano posible.
+    ============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.thinkus</groupId>
+        <artifactId>prueba-thinkus-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>commons</artifactId>
+    <name>Prueba Think Us — Commons</name>
+    <description>DTOs, exceptions y validadores compartidos entre microservicios</description>
+
+    <dependencies>
+        <!-- Bean Validation API (provista por Quarkus en consumidores) -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.26.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

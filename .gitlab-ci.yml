@@ -1,0 +1,199 @@
+# =============================================================================
+# Pipeline GitLab CI/CD
+# =============================================================================
+# Etapas:
+#   1. build      compila los 3 modulos Maven y el frontend Angular
+#   2. test       corre tests unitarios y publica reportes JUnit
+#   3. scan       Trivy escanea vulnerabilidades en imagenes
+#   4. package    construye imagenes con kaniko (sin Docker-in-Docker) y empuja a ECR
+#   5. deploy     Helm upgrade contra EKS (gateado como manual por seguridad)
+#
+# Autenticacion AWS: GitLab actua como OIDC provider y asume un rol via
+# sts:AssumeRoleWithWebIdentity. Cero secrets de AWS hardcodeados.
+#
+# Para activar:
+#  1. Crear el OIDC provider en AWS apuntando a https://gitlab.com (o tu instancia)
+#  2. Crear el IAM Role 'gitlab-ci-thinkus' con trust policy hacia ese OIDC
+#  3. En GitLab > Settings > CI/CD > Variables agregar AWS_ROLE_ARN como var enmascarada
+# =============================================================================
+
+stages:
+  - build
+  - test
+  - scan
+  - package
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dorg.slf4j.simpleLogger.showDateTime=true"
+  AWS_REGION: "us-east-1"
+  ECR_REGISTRY: "123456789012.dkr.ecr.us-east-1.amazonaws.com"
+
+default:
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository/
+      - frontend/node_modules/
+
+# ----------------------------------------------------------------------------
+# BUILD
+# ----------------------------------------------------------------------------
+
+build-backend:
+  stage: build
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - cd backend
+    - mvn -B clean package -DskipTests
+  artifacts:
+    paths:
+      - backend/commons/target/
+      - backend/ms-riesgos/target/quarkus-app/
+      - backend/ms-orquestador/target/quarkus-app/
+    expire_in: 1 hour
+
+build-frontend:
+  stage: build
+  image: node:22-alpine
+  script:
+    - cd frontend
+    - npm ci --no-audit --no-fund
+    - npm run build -- --configuration=production
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 hour
+
+# ----------------------------------------------------------------------------
+# TEST
+# ----------------------------------------------------------------------------
+
+test-backend:
+  stage: test
+  image: maven:3.9-eclipse-temurin-21
+  needs: ["build-backend"]
+  script:
+    - cd backend
+    - mvn -B test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - backend/**/target/surefire-reports/TEST-*.xml
+
+test-frontend:
+  stage: test
+  image: node:22
+  needs: ["build-frontend"]
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq chromium
+    - export CHROME_BIN=$(which chromium)
+  script:
+    - cd frontend
+    - npm test -- --watch=false --browsers=ChromeHeadless
+
+# ----------------------------------------------------------------------------
+# SCAN (Trivy)
+# ----------------------------------------------------------------------------
+
+trivy-fs-scan:
+  stage: scan
+  image: aquasec/trivy:latest
+  needs: []
+  script:
+    - trivy fs --severity HIGH,CRITICAL --exit-code 1 --no-progress .
+  allow_failure: true   # informacional, no bloquea por ahora
+
+# ----------------------------------------------------------------------------
+# PACKAGE (kaniko sin Docker-in-Docker)
+# ----------------------------------------------------------------------------
+
+.package_template: &package_template
+  stage: package
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"credsStore\":\"ecr-login\"}" > /kaniko/.docker/config.json
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_TAG
+
+package-ms-riesgos:
+  <<: *package_template
+  needs: ["test-backend"]
+  script:
+    - /kaniko/executor
+        --context "${CI_PROJECT_DIR}/backend"
+        --dockerfile "${CI_PROJECT_DIR}/backend/ms-riesgos/src/main/docker/Dockerfile.jvm"
+        --destination "${ECR_REGISTRY}/thinkus/ms-riesgos:${CI_COMMIT_SHORT_SHA}"
+        --destination "${ECR_REGISTRY}/thinkus/ms-riesgos:latest"
+        --cache=true
+
+package-ms-orquestador:
+  <<: *package_template
+  needs: ["test-backend"]
+  script:
+    - /kaniko/executor
+        --context "${CI_PROJECT_DIR}/backend"
+        --dockerfile "${CI_PROJECT_DIR}/backend/ms-orquestador/src/main/docker/Dockerfile.jvm"
+        --destination "${ECR_REGISTRY}/thinkus/ms-orquestador:${CI_COMMIT_SHORT_SHA}"
+        --destination "${ECR_REGISTRY}/thinkus/ms-orquestador:latest"
+        --cache=true
+
+package-frontend:
+  <<: *package_template
+  needs: ["test-frontend"]
+  script:
+    - /kaniko/executor
+        --context "${CI_PROJECT_DIR}/frontend"
+        --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile"
+        --destination "${ECR_REGISTRY}/thinkus/frontend:${CI_COMMIT_SHORT_SHA}"
+        --destination "${ECR_REGISTRY}/thinkus/frontend:latest"
+        --cache=true
+
+# ----------------------------------------------------------------------------
+# DEPLOY (Helm a EKS, gateado como manual)
+# ----------------------------------------------------------------------------
+
+.deploy_template: &deploy_template
+  stage: deploy
+  image: alpine/k8s:1.30.2
+  before_script:
+    # OIDC: GitLab provee CI_JOB_JWT_V2 con audience https://gitlab.com
+    - export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/web_identity_token
+    - echo "$CI_JOB_JWT_V2" > /tmp/web_identity_token
+    - aws sts assume-role-with-web-identity
+        --role-arn "$AWS_ROLE_ARN"
+        --role-session-name "gitlab-deploy-$CI_JOB_ID"
+        --web-identity-token "$CI_JOB_JWT_V2"
+    - aws eks update-kubeconfig --region $AWS_REGION --name thinkus-prd
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\./
+      when: manual
+
+deploy-ms-orquestador:
+  <<: *deploy_template
+  environment:
+    name: production
+    url: https://api.thinkus.example.com
+  script:
+    - helm upgrade --install ms-orquestador ./chart
+        --namespace creditos --create-namespace
+        --set image.tag=${CI_COMMIT_SHORT_SHA}
+        --set fullnameOverride=ms-orquestador
+        --atomic --timeout 5m
+
+deploy-ms-riesgos:
+  <<: *deploy_template
+  environment:
+    name: production-internal
+  script:
+    - helm upgrade --install ms-riesgos ./chart
+        --namespace creditos --create-namespace
+        --set image.repository=${ECR_REGISTRY}/thinkus/ms-riesgos
+        --set image.tag=${CI_COMMIT_SHORT_SHA}
+        --set service.port=8081
+        --set fullnameOverride=ms-riesgos
+        --atomic --timeout 5m

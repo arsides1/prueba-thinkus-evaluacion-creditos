@@ -1,0 +1,13 @@
+# Excluir directorios pesados/innecesarios del contexto docker build
+**/target
+**/node_modules
+**/.idea
+**/.vscode
+**/*.iml
+.git
+*.log
+**/.quarkus
+
+# Excluir el ms-orquestador del contexto cuando construimos ms-riesgos y viceversa
+# no es trivial sin .dockerignore por servicio; aceptamos copiar ambos en cada
+# build. El COPY del Dockerfile selecciona solo el modulo necesario.
